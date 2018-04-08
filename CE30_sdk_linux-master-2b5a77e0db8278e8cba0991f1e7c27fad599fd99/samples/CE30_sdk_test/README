@@ -1,0 +1,15 @@
+/***************************************************************************************************
+/* Example to use benewake imaging LiDAR CE30's SDK
+/***************************************************************************************************
+
+Shared object file (.so) complie information:
+	OS: 		Ubuntu 16.04
+	Complier:	gcc 5.4.0
+
+USE:
+	1.Connect CE30-C with power and Ethernet cabless
+	2.Set computer's IP address to: 192.168.1.* (DO NOT USE 192.168.1.80)
+	3.Compile the example: $make
+	4.Run: $LD_LIBRARY_PATH=./ ./test
+	5.The program will ask for LiDAR's IP address, the default is 192.168.1.80. It can be changed after connection.
+	6.Enter IP address and press ENTER. Program should start working ...

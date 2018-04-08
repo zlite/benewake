@@ -1,0 +1,59 @@
+/**************************************************************************************************************************************
+/* Benewake imaging LiDAR CE30's SDK, Linux Version
+/* Version 1.10
+/**************************************************************************************************************************************
+
+/**************************************************************************************************************************************
+/* Files & directories
+/**************************************************************************************************************************************
+  samples:	SDK application example
+  sources:	SDK sources
+
+/**************************************************************************************************************************************
+/* Globel values
+/**************************************************************************************************************************************
+  double gCameraMatrix[]		LiDAR intrinsic parameters, in order {f/dx, skew, u0, 0, f/dy, v0, 0, 0, 1}
+  double gDistCoffs[]			LiDAR distortion parameters, in order {k1, k2, k3, k4}
+  unsigned short gRawDistMatrix[]	LiDAR original distance data
+  unsigned short gRawAmpMatrix[]	LiDAR original amp data
+
+/**************************************************************************************************************************************
+/* References
+/**************************************************************************************************************************************
+  bool initDevice(int &_sd, char *_ip);
+    _sd		socket handle
+    _ip		IP address of LiDAR
+  Initialize TCP connection, camera matrix, distortion coefficients, projection map and start CE30's measurement work.
+
+  bool getDistanceData(int _sd, unsigned short *_dist, unsigned short *_amp);
+    _sd		socket handle
+    _dist	LiDAR distance data buffer, the size should be 24[height] * 660[width]
+    _amp	LiDAR amp data buffer, the size should be 24[height] * 660[width]
+  Get one frame of CE30's original data and put into global value 'gRawDistMatrix[]', and its resolution is 24*320. Calibrate the data 
+  and put undistorted data into data buffer '_dst', and the resolution changes to 24*660 due to calibration.
+
+  bool closeDevice(int &_sd);
+    _sd		socke handle
+  Stop CE30's measurement and disable TCP connection.
+
+  bool getPointCloud(unsigned short *_dist, float *_coordX, float *_coordY, float *_coordZ);
+    _dist	distance data, get from getDistanceData()
+    _coordX	x-axis coordinates of point cloud, the direction is from left to right
+    _coordY	y-axis coordinates of point cloud, the direction is from bottom to top
+    _coordZ	z-axis coordinates of point cloud, the direction is from near to far
+  All params should have the same size of 24[height] * 660[width], and the same sequence number params construct a space point (_coordX[n],
+  _coordY[n], _coordZ[n]). The data sequence is from field of view's left to right and then from top to bottom.
+
+  bool changeIPAddress(int _sd, char *_newIP);
+    _sd		socke handle
+    _newIP	new IP address fields
+  Change LiDAR's IP address to _newIP. The LiDAR will reboot if succeed.
+
+/**************************************************************************************************************************************
+/* How to use
+/**************************************************************************************************************************************
+Option 1:
+  Add codes (in files ./sources/include & ./sources/src) in your projects.
+
+Option 2:
+  Run makefile to generate a shared object file (.so). You can add it to your projects as showed in the example (CE30_sdk_test).
