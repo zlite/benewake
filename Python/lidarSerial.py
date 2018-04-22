@@ -11,7 +11,7 @@ import time
 class serialPort:
     def __init__(self):
         self.baudrate = 115200
-        self.portName = "COM10"
+        self.portName = "/dev/ttyUSB1"
         self.port = None
                    
     def setBardRate(self, baudRate):
@@ -132,7 +132,7 @@ class serialPort:
 if __name__ == "__main__":
 
     port = serialPort()
-    port.openPort("COM3")
+    port.openPort("/dev/ttyUSB1")
     port.lidarStart(320, 320, 2)
     while True:   
         print "read data"
