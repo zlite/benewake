@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 02 18:32:36 2017
+Remix by Chris Anderson, DIY Robocars
 
-@author: fengqiang
+Sample code by fengqiang
 Copyright (c) Benewake LLC.  All rights reserved.
 """
 
@@ -96,7 +96,7 @@ class serialPort:
         theta = ord(data[2])
         if theta & 0x80:
             theta = -1 * (((~theta) + 1) & 0xff)
-        print "min =",Z,theta
+#        print "min =",Z,theta
         if nPoints == 3:
             Z1 = ord(data[3]) | (ord(data[4]) << 8)
             theta1 = ord(data[5])
@@ -147,13 +147,22 @@ if __name__ == "__main__":
     motor.motor0(forward0)
     motor.motor1(forward1)
     steer.turn(15)
-
+    time.sleep(1)
+    steer.turn (65)
+    time.sleep(1)
+    motor.setSpeed(0)
+    motor.motor0(forward0)
+    motor.motor1(forward1)
+    steer.turn(0)
 
     port.openPort("/dev/ttyUSB1")
     port.lidarStart(320, 320, 2)
     while True:
-        print "read data"
-        print port.lidarRead()
+	data = port.lidarRead()
+	print (data[1])
+	steer.turn(-2 * data[1])
+
+
 #    port = serial.Serial(port = 'COM10',
 #                         baudrate = 115200,
 #                         bytesize = serial.EIGHTBITS,
