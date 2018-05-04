@@ -15,6 +15,7 @@ import RPi.GPIO as GPIO
 busnum = 1          # Edit busnum to 0 for Raspberry Pi 1. For RPi 2 and above, use 1
 forward0 = 'True'
 forward1 = 'False'
+offset = 60  # how much the servo has to be turned to have the car go straight
 
 class serialPort:
     def __init__(self):
@@ -143,24 +144,19 @@ if __name__ == "__main__":
     motor.setup(busnum=busnum)
     steer.setup(busnum=busnum)
     print 'motor moving forward'
-    motor.setSpeed(50)
-    motor.motor0(forward0)
-    motor.motor1(forward1)
-    steer.turn(15)
-    time.sleep(1)
-    steer.turn (65)
-    time.sleep(1)
     motor.setSpeed(0)
     motor.motor0(forward0)
     motor.motor1(forward1)
+#    motor.setSpeed(0)
+#    motor.motor0(forward0)
+#    motor.motor1(forward1)
     steer.turn(0)
-
     port.openPort("/dev/ttyUSB1")
     port.lidarStart(320, 320, 2)
     while True:
 	data = port.lidarRead()
 	print (data[1])
-	steer.turn(-2 * data[1])
+	steer.turn((-2 * data[1]) - offset)
 
 
 #    port = serial.Serial(port = 'COM10',
