@@ -15,7 +15,9 @@ import RPi.GPIO as GPIO
 busnum = 1          # Edit busnum to 0 for Raspberry Pi 1. For RPi 2 and above, use 1
 forward0 = 'True'
 forward1 = 'False'
-speed = 50
+speed = 30
+deadband = 1
+gain = 30000 # steering servo gain
 offset = 60  # how much the servo has to be turned to have the car go straight
 probability = 0.8 # this is the baysian "prior", the likelyhood of preview measurement being the same as current one
 old_data = 0
@@ -166,14 +168,31 @@ if __name__ == "__main__":
     steer.turn(0)
     port.openPort("/dev/ttyUSB1")
 #    open lidar with width, depth in cm, refresh rate in hz
-    port.lidarStart(35, 320, 10)
+    port.lidarStart(25, 200, 10)
     while run:
 	try:
 		data = port.lidarRead()
-		print (data[1])
-		turn = kalman(data[1]) # use a single-state kalman fitler to reduce noise in measurements
-		turn = int(turn)
-		steer.turn((-5 * data[1]) - offset)
+		print ("distance: ", data[0])
+		print ("angle: ", data[1])
+		distance = data[0]
+		if distance != 0:
+			scale = gain/distance  # the further away something is, the less we have to turn
+		else:
+			scale = gain
+		print("Scale: ", scale)
+		angle = data[1]
+		angle = kalman(angle) # use a single-state kalman fitler to reduce noise in measurements
+		if (distance < 30) and (distance != 0):	# something is right in front of us!
+			if old_data > 0:   # turn 50 in the direction of the last observed obstacle
+				angle = 30
+			else:
+				angle = -30
+		if (angle <= -deadband) or (angle >= deadband):  # this is the regular situation
+			turn = int(-scale * (1.000/angle))  # use an inverse fuction; the further to the side the obstacle, the less you have to turn
+		else:   # we're in the deadband, so just go straight
+			turn= 0
+		print("turn: ", turn)
+		steer.turn(turn - offset)
 	except KeyboardInterrupt:
 		shutdown()
 
