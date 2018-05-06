@@ -15,7 +15,10 @@ import RPi.GPIO as GPIO
 busnum = 1          # Edit busnum to 0 for Raspberry Pi 1. For RPi 2 and above, use 1
 forward0 = 'True'
 forward1 = 'False'
+speed = 50
 offset = 60  # how much the servo has to be turned to have the car go straight
+probability = 0.8 # this is the baysian "prior", the likelyhood of preview measurement being the same as current one
+old_data = 0
 
 class serialPort:
     def __init__(self):
@@ -79,19 +82,17 @@ class serialPort:
     def lidarRead(self):
         while True:
             data = self.readPort(2)
-            # 检查帧头
             if ord(data[0]) != 0xaa or ord(data[1]) != 0x55:
                 print data
                 continue
             else:
                 data = self.readPort(2)
-                # 检查长度
                 if (ord(data[0]) != 0x01 and ord(data[0]) != 0x03) :
                     continue
                 else:
                     nPoints = ord(data[0])
                     break
-        # 读取一个点的距离和角度数据
+        # Reading a point's distance and angle data  
         data = self.readPort(3 * nPoints)
         Z = ord(data[0]) | (ord(data[1]) << 8)
         theta = ord(data[2])
@@ -109,7 +110,7 @@ class serialPort:
                 theta2 = -1 * (((~theta2) + 1) & 0xff)
             print "left =",Z1,theta1
             print "right =",Z2,theta2
-        print "\n"
+#        print "\n"
         return (Z, theta)
 
     def lidarReadLine(self):
@@ -117,17 +118,15 @@ class serialPort:
         theta = []
         while True:
             data = self.readPort(2)
-            # 检查帧头
             if ord(data[0]) != 0xaa or ord(data[1]) != 0x55:
                 continue
             else:
                 data = self.readPort(2)
-                # 检查长度
                 if ord(data[0]) != 0x40 or ord(data[1]) != 0x01:
                     continue
                 else:
                     break
-        # 读取320个点的距离和角度数据
+        # Reading 320 points of distance and angle data  
         data = self.readPort(3 * 320)
         for i in range(320):
             Z.append(ord(data[3 * i + 0]) | (ord(data[3 * i + 1]) << 8))
@@ -138,13 +137,27 @@ class serialPort:
         return (Z, theta)
 
 
+def kalman(new_data):  # this just smooths data by blending with prior measurement
+	global old_data
+	temp = new_data - ((new_data - old_data) * probability)
+	old_data = temp
+	return (temp)
+
+def shutdown():
+	print ("Stopping")
+	motor.setSpeed(0)
+	port.closePort()
+	run = False
+	
+
 if __name__ == "__main__":
 
+    run = True
     port = serialPort()
     motor.setup(busnum=busnum)
     steer.setup(busnum=busnum)
     print 'motor moving forward'
-    motor.setSpeed(0)
+    motor.setSpeed(speed)
     motor.motor0(forward0)
     motor.motor1(forward1)
 #    motor.setSpeed(0)
@@ -152,25 +165,15 @@ if __name__ == "__main__":
 #    motor.motor1(forward1)
     steer.turn(0)
     port.openPort("/dev/ttyUSB1")
-    port.lidarStart(320, 320, 2)
-    while True:
-	data = port.lidarRead()
-	print (data[1])
-	steer.turn((-2 * data[1]) - offset)
+#    open lidar with width, depth in cm, refresh rate in hz
+    port.lidarStart(35, 320, 10)
+    while run:
+	try:
+		data = port.lidarRead()
+		print (data[1])
+		turn = kalman(data[1]) # use a single-state kalman fitler to reduce noise in measurements
+		turn = int(turn)
+		steer.turn((-5 * data[1]) - offset)
+	except KeyboardInterrupt:
+		shutdown()
 
-
-#    port = serial.Serial(port = 'COM10',
-#                         baudrate = 115200,
-#                         bytesize = serial.EIGHTBITS,
-#                         parity = serial.PARITY_NONE,
-#                         stopbits = serial.STOPBITS_ONE)
-#    port.open()
-#    print port.isOpen()
-#
-#    time.sleep(1)
-#    port.write([0xaa, 0x55, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02])
-#    port.flush()
-#    print ord(port.read(1))
-#    port.close()
-#    while True:
-#        print "wait"
