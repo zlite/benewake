@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Remix by Chris Anderson, DIY Robocars
-
+Adapted to run on the Sunfounder Robocar: https://www.sunfounder.com/robotic-drone/smartcar/picar-v.html
+Assembly instructions here: https://diyrobocars.com/2018/05/07/demo-of-benwake-ce30-a-on-a-diy-robocar/
 Sample code by fengqiang
 Copyright (c) Benewake LLC.  All rights reserved.
 """
 
-import serial
+import serial   # you must have installed the pyserial libary already: "pip install pyserial"
 import time
 import motor
 import car_dir as steer
