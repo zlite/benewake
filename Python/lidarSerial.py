@@ -168,7 +168,7 @@ if __name__ == "__main__":
     steer.turn(0)
     port.openPort("/dev/ttyUSB1")
 #    open lidar with width, depth in cm, refresh rate in hz
-    port.lidarStart(25, 200, 10)
+    port.lidarStart(30, 200, 10)
     while run:
 	try:
 		data = port.lidarRead()
@@ -181,9 +181,9 @@ if __name__ == "__main__":
 			scale = gain
 		print("Scale: ", scale)
 		angle = data[1]
-		angle = kalman(angle) # use a single-state kalman fitler to reduce noise in measurements
+		angle = kalman(angle) # use a single-state kalman filter (basically a moving average) to reduce noise in measurements
 		if (distance < 30) and (distance != 0):	# something is right in front of us!
-			if old_data > 0:   # turn 50 in the direction of the last observed obstacle
+			if old_data > 0:   # turn 30 in the direction of the last observed obstacle
 				angle = 30
 			else:
 				angle = -30
