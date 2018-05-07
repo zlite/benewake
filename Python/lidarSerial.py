@@ -180,7 +180,6 @@ if __name__ == "__main__":
 			scale = gain/distance  # the further away something is, the less we have to turn
 		else:
 			scale = gain
-		print("Scale: ", scale)
 		angle = data[1]
 		angle = kalman(angle) # use a single-state kalman filter (basically a moving average) to reduce noise in measurements
 		if (distance < 30) and (distance != 0):	# something is right in front of us!
