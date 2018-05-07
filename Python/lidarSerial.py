@@ -189,7 +189,7 @@ if __name__ == "__main__":
 			else:
 				angle = -30
 		if (angle <= -deadband) or (angle >= deadband):  # this is the regular situation
-			turn = int(-scale * (1.000/angle))  # use an inverse fuction; the further to the side the obstacle, the less you have to turn
+			turn = int(-scale * (1.000/angle))  # use an inverse function; the further to the side the obstacle, the less you have to turn
 		else:   # we're in the deadband, so just go straight
 			turn= 0
 		print("turn: ", turn)
