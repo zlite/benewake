@@ -147,6 +147,7 @@ def kalman(new_data):  # this just smooths data by blending with prior measureme
 	return (temp)
 
 def shutdown():
+	global run
 	print ("Stopping")
 	motor.setSpeed(0)
 	port.closePort()
